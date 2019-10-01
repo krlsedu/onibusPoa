@@ -16,7 +16,7 @@ import javax.validation.constraints.NotNull;
 public class Linha {
 	@Id
 	@NotNull(message = "O Id da Linha deve ser informado!")
-	private Long id;
+	private String id;
 	
 	@NotBlank(message = "O código da linha deva ser informado!")
 	private String codigo;
