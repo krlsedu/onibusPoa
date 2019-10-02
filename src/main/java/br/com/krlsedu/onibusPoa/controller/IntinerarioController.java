@@ -68,7 +68,7 @@ public class IntinerarioController {
 		for (Linha linha :
 				linhaList) {
 			
-			log.debug("Processando intinerarios da linha - {}", linha);
+			log.info("Processando intinerarios da linha - {}", linha);
 			WebClient intinerarioClient = WebClient.create("http://www.poatransporte.com.br/php/facades/process.php?a=il&p=" + linha.getId());
 			Mono<String> intinerarios = intinerarioClient.get()
 					.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -85,11 +85,11 @@ public class IntinerarioController {
 					LocalizacaoIntegracao localizacaoIntegracao = objectMapper.readValue(entry.getValue().toString(), LocalizacaoIntegracao.class);
 					Intinerario e = new Intinerario( entry.getKey(), new Linha(intinerariosNode.get("codigo").asText()+"-"+intinerariosNode.get("idlinha").asText(), intinerariosNode.get("codigo").asText(), intinerariosNode.get("nome").asText()), new Double[]{localizacaoIntegracao.getLat(), localizacaoIntegracao.getLng()});
 					intinerariList.add(e);
-					log.debug("Novo intinerario criado - {}", e);
+					log.info("Novo intinerario criado - {}", e);
 				}
 			}
 		}
-		return operations.insertAll(intinerariList);
+		return intinerarioService.salvaTodos(intinerariList);
 	}
 	
 	@GetMapping(path = "/intinerarios", produces = MediaType.APPLICATION_STREAM_JSON_VALUE)

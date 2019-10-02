@@ -32,6 +32,10 @@ public class IntinerarioService {
 		return intinerarioRepository.save(intinerario);
 	}
 	
+	public Flux<Intinerario> salvaTodos(List<Intinerario> intinerarios) {
+		return intinerarioRepository.saveAll(intinerarios);
+	}
+	
 	public Flux<Intinerario> buscaTodos() {
 		return intinerarioRepository.findAll();
 	}
