@@ -9,6 +9,7 @@ import br.com.krlsedu.onibusPoa.service.LinhaService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
 import java.io.IOException;
@@ -54,7 +56,7 @@ public class IntinerarioController {
 	
 	@PostMapping("/intinerarios")
 	@ResponseStatus(HttpStatus.CREATED)
-	@ApiOperation(value = "Endpoint para criar e alterar intinerários", response = Intinerario.class)
+	@ApiOperation(value = "Endpoint para criar e alterar intinerários", response = Intinerario.class, tags = "CRUD dos intinerários")
 	public Mono<Intinerario> create(
 			@Valid @RequestBody final Intinerario intinerario) {
 		return intinerarioService.salva(intinerario)
@@ -63,7 +65,7 @@ public class IntinerarioController {
 	
 	@GetMapping("/intinerarios-integracao")
 	@ResponseStatus(HttpStatus.CREATED)
-	@ApiOperation(value = "Endpoint para integrar os dados de intinerarios da api do Poa transportes", response = Linha.class, tags = "Integração dos intinerários", notes = "devido ao grande volume de dados processados, pode levara um tempo significativo para responder")
+	@ApiOperation(value = "Endpoint para integrar os dados de intinerarios da api do Poa transportes", response = Linha.class, tags = "Integração", notes = "devido ao grande volume de dados processados, pode levara um tempo significativo para responder")
 	public Flux<Intinerario> create() throws IOException, InterruptedException {
 		ObjectMapper objectMapper = new ObjectMapper();
 		List<Linha> linhaList = linhaService.buscaTodos().collectList().block();
@@ -97,14 +99,14 @@ public class IntinerarioController {
 	}
 	
 	@GetMapping(path = "/intinerarios", produces = MediaType.APPLICATION_STREAM_JSON_VALUE)
-	@ApiOperation(value = "Endpoint para consultar os intinerarios cadastrados", response = Intinerario.class)
+	@ApiOperation(value = "Endpoint para consultar os intinerarios cadastrados", response = Intinerario.class, tags = "CRUD dos intinerários")
 	@ResponseStatus(HttpStatus.OK)
 	public Flux<Intinerario> buscaTodos() {
 		return intinerarioService.buscaTodos()
 				.doOnComplete(() -> log.debug("Listando todos os intinerarios"));
 	}
 	
-	@ApiOperation(value = "Endpoint para deletar as intinerario por ponto", response = Intinerario.class)
+	@ApiOperation(value = "Endpoint para deletar as intinerario por ponto", response = Intinerario.class, tags = "CRUD dos intinerários")
 	@DeleteMapping(path = "/intinerarios/{ponto}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public Mono<Void> deletaPorCodigo(@ApiParam("Ponto da linha a ser deletada") @PathVariable String ponto) {
 		return intinerarioService.deletePorPonto(ponto);

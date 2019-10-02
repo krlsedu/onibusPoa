@@ -41,7 +41,7 @@ public class LinhaController {
 		this.intinerarioService = intinerarioService;
 	}
 	
-	@ApiOperation(value = "Endpoint de cadastro de Linhas", response = Linha.class, tags = "Criação das linhas")
+	@ApiOperation(value = "Endpoint de cadastro de Linhas", response = Linha.class, tags = "CRUD das linhas")
 	@PostMapping("/linhas")
 	@ResponseStatus(HttpStatus.CREATED)
 	public Mono<Linha> create(
@@ -50,7 +50,7 @@ public class LinhaController {
 				.doOnNext(l -> log.debug("Nova linha criada - {}", l));
 	}
 	
-	@ApiOperation(value = "Endpoint para integrar os dados de linhas da api do Poa transportes", response = Linha.class, tags = "Integração das linhas")
+	@ApiOperation(value = "Endpoint para integrar os dados de linhas da api do Poa transportes", response = Linha.class, tags = "Integração")
 	@GetMapping("/linhas-integracao")
 	@ResponseStatus(HttpStatus.CREATED)
 	public Flux<Linha> create() throws IOException, InterruptedException {
@@ -67,7 +67,7 @@ public class LinhaController {
 		return operations.insertAll(linhaList);
 	}
 	
-	@ApiOperation(value = "Endpoint para consultar as linhas de ônibus passando as coordenadas atuias e o raio desejado", response = Linha.class)
+	@ApiOperation(value = "Endpoint para consultar as linhas de ônibus passando as coordenadas atuias e o raio desejado", response = Linha.class, tags = "CRUD das linhas")
 	@RequestMapping(value = "/linhas-por-localizacao", method = RequestMethod.POST, produces = MediaType.APPLICATION_STREAM_JSON_VALUE)
 	public Flux<Linha> getLinhasLoc(
 			@RequestBody Localizacao locationRequest) {
@@ -76,19 +76,19 @@ public class LinhaController {
 		return intinerarioService.buscaPorLocalizacao(point, distance).flatMap(intinerario -> linhaService.buscaPorCodigo(intinerario.getLinha().getCodigo()));
 	}
 	
-	@ApiOperation(value = "Endpoint para consultar as linhas de ônibus passando as coordenadas atuias e o raio desejado", response = Linha.class)
+	@ApiOperation(value = "Endpoint para consultar as linhas de ônibus passando as coordenadas atuias e o raio desejado", response = Linha.class, tags = "CRUD das linhas")
 	@GetMapping(path = "/linhas", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public Flux<Linha> buscaTodos() {
 		return linhaService.buscaTodos();
 	}
 	
-	@ApiOperation(value = "Endpoint para consultar as linhas de ônibus por nome", response = Linha.class)
+	@ApiOperation(value = "Endpoint para consultar as linhas de ônibus por nome", response = Linha.class, tags = "CRUD das linhas")
 	@GetMapping(path = "/linhas/{nome}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public Flux<Linha> buscaPorNome(@ApiParam("Nome da linha a ser consultada") @PathVariable String nome) {
 		return linhaService.buscaPorNome(nome);
 	}
 	
-	@ApiOperation(value = "Endpoint para deletar as linhas de ônibus por coodigo", response = Linha.class)
+	@ApiOperation(value = "Endpoint para deletar as linhas de ônibus por coodigo", response = Linha.class, tags = "CRUD das linhas")
 	@DeleteMapping(path = "/linhas/{codigo}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public Mono<Void> deletaPorCodigo(@ApiParam("Código da linha a ser deletada") @PathVariable String codigo) {
 		return linhaService.deletePorCodigo(codigo);
