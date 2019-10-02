@@ -32,4 +32,8 @@ public class LinhaService {
 	public Flux<Linha> buscaPorNome(String nome){
 		return linhaRepository.findByNome(Mono.just(nome));
 	}
+	
+	public Mono<Void> deletePorCodigo(String codigo){
+		return linhaRepository.deleteAll(buscaPorCodigo(codigo));
+	}
 }

@@ -40,12 +40,19 @@ public class IntinerarioService {
 		return intinerarioRepository.findAll();
 	}
 	
-	public Flux<Intinerario> buscaIntinerario(Linha linha){
+	public Flux<Intinerario> buscaIntinerario(Linha linha) {
 		return intinerarioRepository.findByLinha(Mono.just(linha));
 	}
 	
-	public Flux<Intinerario> buscaPorLocalizacao(Point p, Distance d){
-		return intinerarioRepository.findByLocationNear(p,d);
+	public Flux<Intinerario> buscaPorLocalizacao(Point p, Distance d) {
+		return intinerarioRepository.findByLocationNear(p, d);
 	}
 	
+	public Flux<Intinerario> buscaPorPonto(String ponto) {
+		return intinerarioRepository.findByPonto(Mono.just(ponto));
+	}
+	
+	public Mono<Void> deletePorPonto(String ponto) {
+		return intinerarioRepository.deleteAll(buscaPorPonto(ponto));
+	}
 }

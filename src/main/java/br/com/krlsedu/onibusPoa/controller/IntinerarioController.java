@@ -9,6 +9,8 @@ import br.com.krlsedu.onibusPoa.service.LinhaService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.Distance;
@@ -52,6 +54,7 @@ public class IntinerarioController {
 	
 	@PostMapping("/intinerarios")
 	@ResponseStatus(HttpStatus.CREATED)
+	@ApiOperation(value = "Endpoint para criar e alterar intinerários", response = Intinerario.class)
 	public Mono<Intinerario> create(
 			@Valid @RequestBody final Intinerario intinerario) {
 		return intinerarioService.salva(intinerario)
@@ -60,6 +63,7 @@ public class IntinerarioController {
 	
 	@GetMapping("/intinerarios-integracao")
 	@ResponseStatus(HttpStatus.CREATED)
+	@ApiOperation(value = "Endpoint para integrar os dados de intinerarios da api do Poa transportes", response = Linha.class, tags = "Integração dos intinerários", notes = "devido ao grande volume de dados processados, pode levara um tempo significativo para responder")
 	public Flux<Intinerario> create() throws IOException, InterruptedException {
 		ObjectMapper objectMapper = new ObjectMapper();
 		List<Linha> linhaList = linhaService.buscaTodos().collectList().block();
@@ -83,7 +87,7 @@ public class IntinerarioController {
 				Map.Entry<String, JsonNode> entry = iter.next();
 				if (entry.getValue().isObject()) {
 					LocalizacaoIntegracao localizacaoIntegracao = objectMapper.readValue(entry.getValue().toString(), LocalizacaoIntegracao.class);
-					Intinerario e = new Intinerario( entry.getKey(), new Linha(intinerariosNode.get("codigo").asText()+"-"+intinerariosNode.get("idlinha").asText(), intinerariosNode.get("codigo").asText(), intinerariosNode.get("nome").asText()), new Double[]{localizacaoIntegracao.getLat(), localizacaoIntegracao.getLng()});
+					Intinerario e = new Intinerario(entry.getKey(), new Linha(intinerariosNode.get("codigo").asText() + "-" + intinerariosNode.get("idlinha").asText(), intinerariosNode.get("codigo").asText(), intinerariosNode.get("nome").asText()), new Double[]{localizacaoIntegracao.getLat(), localizacaoIntegracao.getLng()});
 					intinerariList.add(e);
 					log.info("Novo intinerario criado - {}", e);
 				}
@@ -93,17 +97,16 @@ public class IntinerarioController {
 	}
 	
 	@GetMapping(path = "/intinerarios", produces = MediaType.APPLICATION_STREAM_JSON_VALUE)
+	@ApiOperation(value = "Endpoint para consultar os intinerarios cadastrados", response = Intinerario.class)
 	@ResponseStatus(HttpStatus.OK)
 	public Flux<Intinerario> buscaTodos() {
 		return intinerarioService.buscaTodos()
 				.doOnComplete(() -> log.debug("Listando todos os intinerarios"));
 	}
 	
-	@RequestMapping(value = "/intinerarios-por-localizacao", method = RequestMethod.POST, produces = MediaType.APPLICATION_STREAM_JSON_VALUE)
-	public Flux<Intinerario> getAmbulanceDetails(
-			@RequestBody Localizacao locationRequest) {
-		Point point = new Point(locationRequest.getLatitude(), locationRequest.getLongitude());
-		Distance distance = new Distance(1, Metrics.KILOMETERS);
-		return intinerarioService.buscaPorLocalizacao(point, distance);
+	@ApiOperation(value = "Endpoint para deletar as intinerario por ponto", response = Intinerario.class)
+	@DeleteMapping(path = "/intinerarios/{ponto}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+	public Mono<Void> deletaPorCodigo(@ApiParam("Ponto da linha a ser deletada") @PathVariable String ponto) {
+		return intinerarioService.deletePorPonto(ponto);
 	}
 }
