@@ -18,29 +18,15 @@ import javax.validation.constraints.NotNull;
 @ToString
 @Document
 public class Intinerario {
+	
 	@Id
-	private Long id;
+	@NotNull(message = "O ponto deve ser informado!")
+	private String ponto;
 	
 	@NotNull(message = "A linha deve ser informada!")
 	private Linha linha;
 	
-	@NotNull(message = "O ponto deve ser informado!")
-	private String ponto;
-	
-	
 	@GeoSpatialIndexed(type= GeoSpatialIndexType.GEO_2D)
 	private Double[] location;
-//	private GeoJsonPoint location;
-	
-//	@JsonCreator
-//	public Intinerario(@JsonProperty("id") Long id,
-//	                   @JsonProperty("linha") Linha linha,
-//	                   @JsonProperty("ponto") String ponto,
-//	                   @JsonProperty("location") Localizacao location) {
-//		this.id = id;
-//		this.linha = linha;
-//		this.ponto = ponto;
-//		this.location = new GeoJsonPoint(location.getLatitude(), location.getLongitude());
-//	}
 	
 }
