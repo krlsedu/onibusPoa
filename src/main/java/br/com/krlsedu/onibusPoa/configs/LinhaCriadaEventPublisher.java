@@ -11,30 +11,30 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 
 @Component
-class ProfileCreatedEventPublisher implements
-    ApplicationListener<ProfileCreatedEvent>, // <1>
-    Consumer<FluxSink<ProfileCreatedEvent>> { //<2>
+class LinhaCriadaEventPublisher implements
+    ApplicationListener<LinhaCriadaEvent>, // <1>
+    Consumer<FluxSink<LinhaCriadaEvent>> { //<2>
 
     private final Executor executor;
-    private final BlockingQueue<ProfileCreatedEvent> queue =
+    private final BlockingQueue<LinhaCriadaEvent> queue =
         new LinkedBlockingQueue<>(); // <3>
 
-    ProfileCreatedEventPublisher(Executor executor) {
+    LinhaCriadaEventPublisher(Executor executor) {
         this.executor = executor;
     }
 
     // <4>
     @Override
-    public void onApplicationEvent(ProfileCreatedEvent event) {
+    public void onApplicationEvent(LinhaCriadaEvent event) {
         this.queue.offer(event);
     }
 
      @Override
-    public void accept(FluxSink<ProfileCreatedEvent> sink) {
+    public void accept(FluxSink<LinhaCriadaEvent> sink) {
         this.executor.execute(() -> {
             while (true)
                 try {
-                    ProfileCreatedEvent event = queue.take(); // <5>
+                    LinhaCriadaEvent event = queue.take(); // <5>
                     sink.next(event); // <6>
                 }
                 catch (InterruptedException e) {
