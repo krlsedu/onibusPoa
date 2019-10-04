@@ -15,13 +15,14 @@ import javax.validation.constraints.NotNull;
 @ToString
 @Document
 public class Linha {
-	@Id
+	
 	@NotNull(message = "O Id da Linha deve ser informado!")
 	@ApiModelProperty(notes = "Identificador único da linha", position = 1)
 	private String id;
 	
+	@Id
 	@NotBlank(message = "O código da linha deva ser informado!")
-	@ApiModelProperty(notes = "Codigo identificador da linha na EPTC", position = 1, example = "T11-2")
+	@ApiModelProperty(notes = "Codigo identificador único da linha na EPTC", position = 1, example = "T11-2")
 	private String codigo;
 	
 	@NotBlank(message = "O nome da linha deva ser informado!")

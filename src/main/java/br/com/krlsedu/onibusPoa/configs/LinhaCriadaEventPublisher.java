@@ -1,5 +1,6 @@
 package br.com.krlsedu.onibusPoa.configs;
 
+import br.com.krlsedu.onibusPoa.model.Linha;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
@@ -11,33 +12,28 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 
 @Component
-class LinhaCriadaEventPublisher implements
-    ApplicationListener<LinhaCriadaEvent>, // <1>
-    Consumer<FluxSink<LinhaCriadaEvent>> { //<2>
-
+public class LinhaCriadaEventPublisher implements ApplicationListener<LinhaCriadaEvent>, Consumer<FluxSink<Linha>> {
+    
     private final Executor executor;
-    private final BlockingQueue<LinhaCriadaEvent> queue =
-        new LinkedBlockingQueue<>(); // <3>
-
-    LinhaCriadaEventPublisher(Executor executor) {
+    private final BlockingQueue<LinhaCriadaEvent> queue = new LinkedBlockingQueue<>();
+    
+    public LinhaCriadaEventPublisher(Executor executor) {
         this.executor = executor;
     }
-
-    // <4>
+    
     @Override
-    public void onApplicationEvent(LinhaCriadaEvent event) {
-        this.queue.offer(event);
+    public void onApplicationEvent(LinhaCriadaEvent linhaCriadaEvent) {
+        this.queue.offer(linhaCriadaEvent);
     }
-
-     @Override
-    public void accept(FluxSink<LinhaCriadaEvent> sink) {
+    
+    @Override
+    public void accept(FluxSink<Linha> linhaFluxSink) {
         this.executor.execute(() -> {
             while (true)
                 try {
-                    LinhaCriadaEvent event = queue.take(); // <5>
-                    sink.next(event); // <6>
-                }
-                catch (InterruptedException e) {
+                    LinhaCriadaEvent linhaCriadaEvent = queue.take();
+                    linhaFluxSink.next(linhaCriadaEvent.getLinha());
+                } catch (InterruptedException e) {
                     ReflectionUtils.rethrowRuntimeException(e);
                 }
         });

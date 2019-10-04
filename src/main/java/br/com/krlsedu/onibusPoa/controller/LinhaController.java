@@ -1,7 +1,8 @@
 package br.com.krlsedu.onibusPoa.controller;
 
-import br.com.krlsedu.onibusPoa.model.*;
-import br.com.krlsedu.onibusPoa.service.IntinerarioService;
+import br.com.krlsedu.onibusPoa.configs.LinhaCriadaEventPublisher;
+import br.com.krlsedu.onibusPoa.model.Linha;
+import br.com.krlsedu.onibusPoa.model.Localizacao;
 import br.com.krlsedu.onibusPoa.service.LinhaService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.Metrics;
 import org.springframework.data.geo.Point;
-import org.springframework.data.mongodb.core.ReactiveMongoOperations;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,15 +30,12 @@ import java.util.List;
 public class LinhaController {
 	
 	private final LinhaService linhaService;
-	private final IntinerarioService intinerarioService;
+	private final LinhaCriadaEventPublisher linhaCriadaEvent;
 	
 	@Autowired
-	ReactiveMongoOperations operations;
-	
-	@Autowired
-	public LinhaController(LinhaService linhaService, IntinerarioService intinerarioService) {
+	public LinhaController(LinhaService linhaService, LinhaCriadaEventPublisher linhaCriadaEvent) {
 		this.linhaService = linhaService;
-		this.intinerarioService = intinerarioService;
+		this.linhaCriadaEvent = linhaCriadaEvent;
 	}
 	
 	@ApiOperation(value = "Endpoint de cadastro de Linhas", response = Linha.class, tags = "CRUD das linhas")
@@ -46,8 +43,7 @@ public class LinhaController {
 	@ResponseStatus(HttpStatus.CREATED)
 	public Mono<Linha> create(
 			@Valid @RequestBody final Linha linha) {
-		return linhaService.salva(linha)
-				.doOnNext(l -> log.debug("Nova linha criada - {}", l));
+		return linhaService.salva(linha);
 	}
 	
 	@ApiOperation(value = "Endpoint para integrar os dados de linhas da api do Poa transportes", response = Linha.class, tags = "Integração")
@@ -64,7 +60,7 @@ public class LinhaController {
 		ObjectMapper objectMapper = new ObjectMapper();
 		List<Linha> linhaList = objectMapper.readValue(linhas.block(), new TypeReference<List<Linha>>() {
 		});
-		return operations.insertAll(linhaList);
+		return linhaService.salvaTodos(linhaList);
 	}
 	
 	@ApiOperation(value = "Endpoint para consultar as linhas de ônibus passando as coordenadas atuias e o raio desejado", response = Linha.class, tags = "CRUD das linhas")
@@ -72,23 +68,23 @@ public class LinhaController {
 	public Flux<Linha> getLinhasLoc(
 			@RequestBody Localizacao locationRequest) {
 		Point point = new Point(locationRequest.getLatitude(), locationRequest.getLongitude());
-		Distance distance = new Distance(0.1, Metrics.KILOMETERS);
-		return intinerarioService.buscaPorLocalizacao(point, distance).flatMap(intinerario -> linhaService.buscaPorCodigo(intinerario.getLinha().getCodigo()));
+		Distance distance = new Distance((locationRequest.getRaio() == null ? 1 : locationRequest.getRaio()), Metrics.KILOMETERS);
+		return linhaService.buscaPorLocalizacao(point, distance);
 	}
 	
-	@ApiOperation(value = "Endpoint para consultar as linhas de ônibus passando as coordenadas atuias e o raio desejado", response = Linha.class, tags = "CRUD das linhas")
+	@ApiOperation(value = "Endpoint para consultar todas as linhas de ônibus, sendo o mesmo reativo à criação de novas linhas", response = Linha.class, tags = "CRUD das linhas")
 	@GetMapping(path = "/linhas", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public Flux<Linha> buscaTodos() {
-		return linhaService.buscaTodos();
+		return linhaService.buscaTodos().concatWith(Flux.create(linhaCriadaEvent)).share();
 	}
 	
 	@ApiOperation(value = "Endpoint para consultar as linhas de ônibus por nome", response = Linha.class, tags = "CRUD das linhas")
 	@GetMapping(path = "/linhas/{nome}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public Flux<Linha> buscaPorNome(@ApiParam("Nome da linha a ser consultada") @PathVariable String nome) {
-		return linhaService.buscaPorNome(nome);
+		return linhaService.buscaPorNome(nome).concatWith(Flux.create(linhaCriadaEvent).filter(linha -> linha.getNome().equals(nome))).share();
 	}
 	
-	@ApiOperation(value = "Endpoint para deletar as linhas de ônibus por coodigo", response = Linha.class, tags = "CRUD das linhas")
+	@ApiOperation(value = "Endpoint para deletar as linhas de ônibus por código de linha", response = Linha.class, tags = "CRUD das linhas")
 	@DeleteMapping(path = "/linhas/{codigo}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public Mono<Void> deletaPorCodigo(@ApiParam("Código da linha a ser deletada") @PathVariable String codigo) {
 		return linhaService.deletePorCodigo(codigo);

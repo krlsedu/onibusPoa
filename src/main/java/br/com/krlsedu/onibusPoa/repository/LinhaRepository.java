@@ -6,8 +6,12 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Repository
 public interface LinhaRepository extends ReactiveCrudRepository<Linha,Long> {
-	Flux<Linha> findByCodigo(Mono<String> codigo);
+	Mono<Linha> findByCodigo(Mono<String> codigo);
 	Flux<Linha> findByNome(Mono<String> nome);
+	
+	Flux<Linha> findAllByCodigo(List<String> longs);
 }
