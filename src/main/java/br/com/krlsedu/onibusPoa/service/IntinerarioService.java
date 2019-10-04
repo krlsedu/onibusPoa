@@ -1,11 +1,9 @@
 package br.com.krlsedu.onibusPoa.service;
 
 import br.com.krlsedu.onibusPoa.model.Intinerario;
-import br.com.krlsedu.onibusPoa.model.Linha;
 import br.com.krlsedu.onibusPoa.repository.IntinerarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.geo.Distance;
-import org.springframework.data.geo.Point;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -18,12 +16,22 @@ public class IntinerarioService {
 	private final IntinerarioRepository intinerarioRepository;
 	
 	@Autowired
-	public IntinerarioService(IntinerarioRepository intinerarioRepository) {
+	public IntinerarioService(IntinerarioRepository intinerarioRepository, ApplicationEventPublisher publisher) {
 		this.intinerarioRepository = intinerarioRepository;
 	}
 	
 	public Mono<Intinerario> salva(Intinerario intinerario) {
-		return intinerarioRepository.save(intinerario);
+		Mono<Intinerario> mono = intinerarioRepository.findByPonto(Mono.just(intinerario.getPonto()));
+		Intinerario block = mono.block();
+		if (block == null) {
+			return intinerarioRepository.save(intinerario);
+		} else {
+			if (!block.equals(intinerario)) {
+				return intinerarioRepository.save(intinerario);
+			} else {
+				return Mono.just(intinerario);
+			}
+		}
 	}
 	
 	public Flux<Intinerario> salvaTodos(List<Intinerario> intinerarios) {
@@ -34,15 +42,7 @@ public class IntinerarioService {
 		return intinerarioRepository.findAll();
 	}
 	
-	public Flux<Intinerario> buscaIntinerario(Linha linha) {
-		return intinerarioRepository.findByLinha(Mono.just(linha));
-	}
-	
-	public Flux<Intinerario> buscaPorLocalizacao(Point p, Distance d) {
-		return intinerarioRepository.findByLocationNear(p, d);
-	}
-	
-	public Flux<Intinerario> buscaPorPonto(String ponto) {
+	public Mono<Intinerario> buscaPorPonto(String ponto) {
 		return intinerarioRepository.findByPonto(Mono.just(ponto));
 	}
 	

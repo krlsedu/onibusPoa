@@ -1,11 +1,8 @@
 package br.com.krlsedu.onibusPoa.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexType;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -18,6 +15,7 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 @ToString
 @Document
+@EqualsAndHashCode
 public class Intinerario {
 	
 	@Id
@@ -32,5 +30,4 @@ public class Intinerario {
 	@GeoSpatialIndexed(type= GeoSpatialIndexType.GEO_2D)
 	@ApiModelProperty(notes = "array contendo as coordenadas do ponto latitude,longitude", position = 3)
 	private Double[] location;
-	
 }

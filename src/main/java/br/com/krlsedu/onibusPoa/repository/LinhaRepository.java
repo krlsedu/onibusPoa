@@ -13,5 +13,5 @@ public interface LinhaRepository extends ReactiveCrudRepository<Linha,Long> {
 	Mono<Linha> findByCodigo(Mono<String> codigo);
 	Flux<Linha> findByNome(Mono<String> nome);
 	
-	Flux<Linha> findAllByCodigo(List<String> longs);
+	Flux<Linha> findAllByCodigo(List<String> codigos);
 }

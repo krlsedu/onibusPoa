@@ -11,5 +11,6 @@ import reactor.core.publisher.Mono;
 public interface IntinerarioRepository extends ReactiveCrudRepository<Intinerario, Long> {
 	Flux<Intinerario> findByLinha(Mono<Linha> linha);
 	Flux<Intinerario> findByLocationNear(Point p, Distance d);
-	Flux<Intinerario> findByPonto(Mono<String> ponto);
+	
+	Mono<Intinerario> findByPonto(Mono<String> ponto);
 }

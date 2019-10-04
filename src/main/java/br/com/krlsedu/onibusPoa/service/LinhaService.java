@@ -34,15 +34,20 @@ public class LinhaService {
 	
 	public Mono<Linha> salva(Linha linha) {
 		Mono<Linha> linhaMono = linhaRepository.findByCodigo(Mono.just(linha.getCodigo()));
-		if (linhaMono.block() == null) {
+		Linha block = linhaMono.block();
+		if (block == null) {
 			return linhaRepository.save(linha).doOnNext(l -> this.publisher.publishEvent(new LinhaCriadaEvent(l)));
 		} else {
-			return linhaRepository.save(linha);
+			if (!block.equals(linha)) {
+				return linhaRepository.save(linha);
+			} else {
+				return Mono.just(linha);
+			}
 		}
 	}
 	
 	public Flux<Linha> salvaTodos(List<Linha> linhas) {
-		return linhaRepository.saveAll(linhas);
+		return linhaRepository.saveAll(linhas).doOnNext(l -> this.publisher.publishEvent(new LinhaCriadaEvent(l)));
 	}
 	
 	public Flux<Linha> buscaTodos() {
@@ -56,15 +61,17 @@ public class LinhaService {
 	public Flux<Linha> buscaPorLocalizacao(Point p, Distance d) {
 		Flux<Intinerario> intinerarioFlux = intinerarioRepository.findByLocationNear(p, d);
 		List<String> codigos = new ArrayList<>();
+		List<Linha> linhas = new ArrayList<>();
 		List<Intinerario> intinerarios = intinerarioFlux.collectList().block();
 		assert intinerarios != null;
 		for (Intinerario intinerario :
 				intinerarios) {
 			if (!codigos.contains(intinerario.getLinha().getCodigo())) {
 				codigos.add(intinerario.getLinha().getCodigo());
+				linhas.add(linhaRepository.findByCodigo(Mono.just(intinerario.getLinha().getCodigo())).block());
 			}
 		}
-		return linhaRepository.findAllByCodigo(codigos);
+		return Flux.fromIterable(linhas);
 	}
 	
 	public Flux<Linha> buscaPorNome(String nome) {

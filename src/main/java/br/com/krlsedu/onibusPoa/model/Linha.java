@@ -14,6 +14,7 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 @ToString
 @Document
+@EqualsAndHashCode
 public class Linha {
 	
 	@NotNull(message = "O Id da Linha deve ser informado!")
