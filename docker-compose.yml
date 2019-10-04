@@ -10,7 +10,7 @@ version: '3'
     mongo-init:
       build: ./mongo-init
       links:
-        - mongoDb
+        - mongodb
 
     mongo-client:
       image: mongoclient/mongoclient
@@ -19,7 +19,7 @@ version: '3'
       environment:
         - MONGOCLIENT_DEFAULT_CONNECTION_URL=mongodb://mongo:27017
       links:
-        - mongoDb
+        - mongodb
 
     # APP ************************************************************
     app:
@@ -27,7 +27,7 @@ version: '3'
       ports:
         - 8080:8080
       links:
-        - mongoDb
+        - mongodb
       environment:
         - MONGOCLIENT_DEFAULT_CONNECTION_URL=mongodb://mongo:27017
       entrypoint: "java -Djava.security.egd=file:/dev/./urandom -jar /app.jar"
