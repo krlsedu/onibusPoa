@@ -1,34 +1,14 @@
 version: '3'
-  services:
-    mongo:
-      image: mongo:4.2.0
-      container_name: "mongodb"
-      ports:
-        - 27017:27017
-      command: --smallfiles
-
-    mongo-init:
-      build: ./mongo-init
-      links:
-        - mongodb
-
-    mongo-client:
-      image: mongoclient/mongoclient
-      ports:
-        - 3000:3000
-      environment:
-        - MONGOCLIENT_DEFAULT_CONNECTION_URL=mongodb://mongodb:27017
-      links:
-        - mongodb
-
-    # APP ************************************************************
-    app:
-      image: krlsedu/onibus-poa
-        container_name: "onibuspoa"
-      ports:
-        - 8080:8080
-      links:
-        - mongodb
-      environment:
-        - MONGOCLIENT_DEFAULT_CONNECTION_URL=mongodb://mongo:27017
-      entrypoint: "java -Djava.security.egd=file:/dev/./urandom -jar /app.jar"
+services:
+  mongodb:
+    image: mongo:4.2.0
+    container_name: "mongodb"
+    ports:
+      - 27017:27017
+    command: --smallfiles
+  app:
+    image: krlsedu/onibus-poa
+    ports:
+      - 8080:8080
+    depends_on:
+      - mongodb
