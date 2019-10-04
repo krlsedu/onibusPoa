@@ -4,18 +4,6 @@ services:
     image: mongo:4.2.0
     ports:
       - 27017:27017
-  mongo-client:
-    image: mongoclient/mongoclient
-    ports:
-      - 3000:3000
-    environment:
-      - MONGOCLIENT_DEFAULT_CONNECTION_URL=mongodb://mongo:27017
-    links:
-      - mongo
-    depends_on:
-      - mongo
-
-  # APP ************************************************************
   app:
     image: krlsedu/onibus-poa
     ports:
