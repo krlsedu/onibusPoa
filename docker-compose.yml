@@ -1,7 +1,8 @@
-version: "2.1"
+version: '3'
   services:
     mongo:
-      image: mongo:3.2.4
+      image: mongo:4.2.0
+      container_name: "mongodb"
       ports:
         - 27017:27017
       command: --smallfiles
@@ -9,7 +10,7 @@ version: "2.1"
     mongo-init:
       build: ./mongo-init
       links:
-        - mongo
+        - mongoDb
 
     mongo-client:
       image: mongoclient/mongoclient
@@ -18,13 +19,15 @@ version: "2.1"
       environment:
         - MONGOCLIENT_DEFAULT_CONNECTION_URL=mongodb://mongo:27017
       links:
-        - mongo
+        - mongoDb
 
     # APP ************************************************************
-    spring-boot-mongo-docker:
+    app:
       image: krlsedu/onibus-poa
       ports:
         - 8080:8080
       links:
-        - mongo
+        - mongoDb
+      environment:
+        - MONGOCLIENT_DEFAULT_CONNECTION_URL=mongodb://mongo:27017
       entrypoint: "java -Djava.security.egd=file:/dev/./urandom -jar /app.jar"
