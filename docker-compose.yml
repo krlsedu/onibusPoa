@@ -4,8 +4,6 @@ services:
     image: mongo:4.2.0
     ports:
       - 27017:27017
-    command: --smallfiles
-
   mongo-client:
     image: mongoclient/mongoclient
     ports:
@@ -14,14 +12,16 @@ services:
       - MONGOCLIENT_DEFAULT_CONNECTION_URL=mongodb://mongo:27017
     links:
       - mongo
+    depends_on:
+      - mongo
 
   # APP ************************************************************
   app:
     image: krlsedu/onibus-poa
     ports:
       - 8080:8080
-    depends_on:
+    links:
       - mongo
-    environment:
-      - MONGOCLIENT_DEFAULT_CONNECTION_URL=mongo://mongo:27017
     entrypoint: "java -Djava.security.egd=file:/dev/./urandom -jar /app.jar"
+    depends_on:
+        - mongo
