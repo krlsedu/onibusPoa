@@ -1,3 +1,4 @@
+FROM mongo:4.2.0
 FROM openjdk:11
 ADD target/onibusPoa-v-1.0.jar app.jar
 ENV JAVA_OPTS=""

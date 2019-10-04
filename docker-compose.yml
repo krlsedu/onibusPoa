@@ -17,13 +17,14 @@ version: '3'
       ports:
         - 3000:3000
       environment:
-        - MONGOCLIENT_DEFAULT_CONNECTION_URL=mongodb://mongo:27017
+        - MONGOCLIENT_DEFAULT_CONNECTION_URL=mongodb://mongodb:27017
       links:
         - mongodb
 
     # APP ************************************************************
     app:
       image: krlsedu/onibus-poa
+        container_name: "onibuspoa"
       ports:
         - 8080:8080
       links:

@@ -8,14 +8,14 @@ import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 
 @Configuration
 public class ReactiveMongoConfig {
-	
+
 	private final MongoClient mongoClient;
-	
+
 	@Autowired
 	public ReactiveMongoConfig(MongoClient mongoClient) {
 		this.mongoClient = mongoClient;
 	}
-	
+
 	@Bean
 	public ReactiveMongoTemplate reactiveMongoTemplate() {
 		return new ReactiveMongoTemplate(mongoClient, "mongo");
